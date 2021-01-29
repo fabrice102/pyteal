@@ -3,7 +3,6 @@ from typing import List
 from ..types import TealType, require_type
 from ..ir import TealOp, Op, TealSimpleBlock, TealConditionalBlock
 from ..errors import TealInputError
-from ..util import new_label
 from .expr import Expr
 from .err import Err
 from .if_ import If

@@ -1,6 +1,5 @@
 from ..types import TealType, require_type
 from ..ir import TealOp, Op, TealSimpleBlock, TealConditionalBlock
-from ..util import new_label
 from .expr import Expr
 
 class Assert(Expr):

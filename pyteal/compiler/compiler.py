@@ -8,6 +8,9 @@ from ..config import NUM_SLOTS
 from .sort import sortBlocks
 from .flatten import flattenBlocks
 
+from .apply import applyOptimizationToList
+from .optimizer import detectDuplicatesInBlock
+
 def verifyOpsForMode(teal: List[TealComponent], mode: Mode):
     """Verify that all TEAL operations are allowed in mode.
 
@@ -45,7 +48,9 @@ def compileTeal(ast: Expr, mode: Mode) -> str:
     start.validate()
 
     order = sortBlocks(start)
-    teal = flattenBlocks(order)
+    blocks = applyOptimizationToList(order, detectDuplicatesInBlock)
+
+    teal = flattenBlocks(blocks)
 
     verifyOpsForMode(teal, mode)
 

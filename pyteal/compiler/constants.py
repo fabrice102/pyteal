@@ -1,5 +1,6 @@
 from typing import List, DefaultDict
 from collections import defaultdict
+from algosdk import encoding
 
 from ..ir import Op, TealOp, TealLabel, TealComponent, TealBlock, TealSimpleBlock, TealConditionalBlock
 from ..errors import TealInternalError
@@ -16,14 +17,15 @@ def createConstantBlocks(ops: List[TealComponent]) -> List[TealComponent]:
 
         if basicOp == Op.int:
             intValue = op.args[0]
-            if type(intValue) != int:
-                raise TealInternalError('Invalid integer constant')
             intFreqs[intValue] += 1
         elif basicOp == Op.byte:
             byteValue = op.args[0]
-            if type(byteValue) != str:
-                raise TealInternalError('Invalid byte constant')
             byteFreqs[byteValue] += 1
+        elif basicOp == Op.addr:
+            addrValue = op.args[0]
+            if not addrValue.startswith('TMPL_'):
+                addrValue = encoding.decode_address(addrValue)
+            byteFreqs[addrValue] += 1
     
     assembled: List[TealComponent] = []
     sortedInts = sorted(intFreqs.keys(), key=lambda x: intFreqs[x], reverse=True)
@@ -54,7 +56,7 @@ def createConstantBlocks(ops: List[TealComponent]) -> List[TealComponent]:
                     assembled.append(TealOp(Op.intc, index))
                 continue
             
-            if basicOp == Op.byte:
+            if basicOp == Op.byte or basicOp == Op.addr:
                 byteValue = op.args[0]
                 index = sortedBytes.index(byteValue)
                 if index == 0:

@@ -34,6 +34,24 @@ class Int(LeafExpr):
 
 Int.__module__ = "pyteal"
 
+intEnumValues = {
+    # OnComplete values
+    "NoOp": 0,
+    "OptIn": 1,
+    "CloseOut": 2,
+    "ClearState": 3,
+    "UpdateApplication": 4,
+    "DeleteApplication": 5,
+    # TxnType values
+    "unknown": 0,
+    "pay": 1,
+    "keyreg": 2,
+    "acfg": 3,
+    "axfer": 4,
+    "afrz": 5,
+    "appl": 6,
+}
+
 class EnumInt(LeafExpr):
     """An expression that represents uint64 enum values."""
 
@@ -43,10 +61,12 @@ class EnumInt(LeafExpr):
         Args:
             name: The name of the enum value.
         """
+        if name not in intEnumValues:
+            raise TealInputError("Unknown int enum value: {}".format(name))
         self.name = name
 
     def __teal__(self):
-        op = TealOp(Op.int, self.name)
+        op = TealOp(Op.int, intEnumValues[self.name])
         return TealBlock.FromOp(op)
 
     def __str__(self):

@@ -5,6 +5,8 @@ Helper functions and classes
 
 import subprocess
 
+from .errors import TealInternalError
+
 def execute(args):
     """ Execute in bash, return stdout and stderr in string
     
@@ -47,3 +49,20 @@ def escapeStr(s: str) -> str:
     
     # Surround string in double quotes
     return "\"" + s + "\""
+
+def correctBase32Padding(s: str) -> str:
+    content = s.split('=')[0]
+    trailing = len(content) % 8
+
+    if trailing == 2:
+        content += '='*6
+    elif trailing == 4:
+        content += '='*4
+    elif trailing == 5:
+        content += '='*3
+    elif trailing == 7:
+        content += '='
+    elif trailing != 0:
+        raise TealInternalError("Invalid base32 content")
+    
+    return content

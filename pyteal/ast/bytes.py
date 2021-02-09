@@ -1,5 +1,7 @@
+import base64
+
 from ..types import TealType, valid_base16, valid_base32, valid_base64
-from ..util import escapeStr
+from ..util import escapeStr, correctBase32Padding
 from ..ir import TealOp, Op, TealBlock
 from ..errors import TealInputError
 from .leafexpr import LeafExpr
@@ -24,12 +26,12 @@ class Bytes(LeafExpr):
         """
         if len(args) == 1:
             self.base = "utf8"
-            self.byte_str = escapeStr(args[0])
+            self.byte_str = args[0]
         elif len(args) == 2:
             self.base, byte_str = args
             if self.base == "base32":
                 valid_base32(byte_str)
-                self.byte_str = byte_str
+                self.byte_str = correctBase32Padding(byte_str)
             elif self.base == "base64":
                 self.byte_str = byte_str
                 valid_base64(byte_str)
@@ -43,15 +45,21 @@ class Bytes(LeafExpr):
                 raise TealInputError("invalid base {}, need to be base32, base64, or base16.".format(self.base))
         else:
             raise TealInputError("Only 1 or 2 arguments are expected for Bytes constructor, you provided {}".format(len(args)))
+    
+    def _content(self) -> str:
+        if self.base == "utf8":
+            return self.byte_str.encode().hex()
+        elif self.base == "base16":
+            return self.byte_str
+        elif self.base == "base32":
+            return base64.b32decode(self.byte_str).hex()
+        elif self.base == "base64":
+            return base64.b64decode(self.byte_str).hex()
+        raise TealInputError('Unknown bytes base')
 
     def __teal__(self):
-        if self.base == "utf8":
-            payload = self.byte_str
-        elif self.base == "base16":
-            payload = "0x" + self.byte_str
-        else:
-            payload = "{}({})".format(self.base, self.byte_str)
-        op = TealOp(Op.byte, payload)
+        content = "0x" + self._content()
+        op = TealOp(Op.byte, content)
         return TealBlock.FromOp(op)
 
     def __str__(self):

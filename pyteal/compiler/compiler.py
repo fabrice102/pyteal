@@ -7,6 +7,7 @@ from ..config import NUM_SLOTS
 
 from .sort import sortBlocks
 from .flatten import flattenBlocks
+from .constants import createConstantBlocks
 
 from .apply import applyOptimizationToList
 from .optimizer import detectDuplicatesInBlock
@@ -70,6 +71,8 @@ def compileTeal(ast: Expr, mode: Mode) -> str:
         for stmt in teal:
             stmt.assignSlot(slot, location)
         location += 1
+
+    teal = createConstantBlocks(teal)
 
     lines = ["#pragma version 2"]
     lines += [i.assemble() for i in teal]

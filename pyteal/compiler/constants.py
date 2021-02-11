@@ -28,8 +28,8 @@ def createConstantBlocks(ops: List[TealComponent]) -> List[TealComponent]:
             byteFreqs[addrValue] += 1
     
     assembled: List[TealComponent] = []
-    sortedInts = sorted(intFreqs.keys(), key=lambda x: intFreqs[x], reverse=True)
-    sortedBytes = sorted(byteFreqs.keys(), key=lambda x: byteFreqs[x], reverse=True)
+    sortedInts = sorted(intFreqs.keys(), key=lambda x: (intFreqs[x], x), reverse=True)
+    sortedBytes = sorted(byteFreqs.keys(), key=lambda x: (byteFreqs[x], x), reverse=True)
 
     if len(intFreqs) != 0:
         assembled.append(TealOp(Op.intcblock, *sortedInts))

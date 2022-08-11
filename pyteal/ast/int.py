@@ -32,6 +32,9 @@ class Int(LeafExpr):
         op = TealOp(self, Op.int, self.value)
         return TealBlock.FromOp(options, op)
 
+    def __eval__(self, context):
+        return self.value
+
     def __str__(self):
         return "(Int {})".format(self.value)
 

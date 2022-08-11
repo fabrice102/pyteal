@@ -39,6 +39,9 @@ class Expr(ABC):
         """Assemble TEAL IR for this component and its arguments."""
         pass
 
+    def __eval__(self, context):
+        raise NotImplementedError()
+
     def __lt__(self, other):
         from pyteal.ast.binaryexpr import Lt
 

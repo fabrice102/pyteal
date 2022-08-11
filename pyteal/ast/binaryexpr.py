@@ -19,6 +19,7 @@ class BinaryExpr(Expr):
         outputType: TealType,
         argLeft: Expr,
         argRight: Expr,
+        evalFn = None
     ) -> None:
         super().__init__()
         if type(inputType) is tuple:
@@ -33,6 +34,7 @@ class BinaryExpr(Expr):
         self.outputType = outputType
         self.argLeft = argLeft
         self.argRight = argRight
+        self.evalFn = evalFn
 
     def __teal__(self, options: "CompileOptions"):
         verifyProgramVersion(
@@ -44,6 +46,12 @@ class BinaryExpr(Expr):
         return TealBlock.FromOp(
             options, TealOp(self, self.op), self.argLeft, self.argRight
         )
+
+    def __eval__(self, context):
+        if self.evalFn is None:
+            raise NotImplemented
+
+        return self.evalFn(self.argLeft.__eval__(context), self.argRight.__eval__(context))
 
     def __str__(self):
         return "({} {} {})".format(
@@ -69,7 +77,8 @@ def Minus(left: Expr, right: Expr) -> Expr:
         left: Must evaluate to uint64.
         right: Must evaluate to uint64.
     """
-    return BinaryExpr(Op.minus, TealType.uint64, TealType.uint64, left, right)
+    # WARNING: EVAL OF THIS IS INSECURE, PROPER FUNCTION MUST VERIFY BOUND AND ABORT ACCORDING TO SPECS!!!!
+    return BinaryExpr(Op.minus, TealType.uint64, TealType.uint64, left, right, lambda x, y: x-y)
 
 
 def Div(left: Expr, right: Expr) -> Expr:
@@ -81,7 +90,8 @@ def Div(left: Expr, right: Expr) -> Expr:
         left: Must evaluate to uint64.
         right: Must evaluate to uint64.
     """
-    return BinaryExpr(Op.div, TealType.uint64, TealType.uint64, left, right)
+    # WARNING: EVAL OF THIS IS INSECURE, PROPER FUNCTION MUST VERIFY BOUND AND ABORT ACCORDING TO SPECS!!!!
+    return BinaryExpr(Op.div, TealType.uint64, TealType.uint64, left, right, lambda x, y: x / y)
 
 
 def Mod(left: Expr, right: Expr) -> Expr:
